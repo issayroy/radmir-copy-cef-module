@@ -6,3 +6,9 @@
 
 Функция: SendClientEventWithArgumentsF (аналог SendPacket_2) используется чтобы сразу отправлять форматированную строку.
 Пример: SendClientEventWithArgumentsF(playerid, Interface, CefShow, "Auth", "[\"auth\", \"%s\", 1, 1, 0, 0, 1]", param);
+
+Version 2.0
+
+Появилась возможность использования в filterscripts
+— Принятие эвентов в filterscripts файле
+— Отправка пакета
