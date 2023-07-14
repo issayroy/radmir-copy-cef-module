@@ -18,6 +18,10 @@
     #define SendPacket_2    SendClientEventWithArguments
 #endif
 
+#if !defined Dialog
+    #define Dialog          ShowPlayerDialog
+#endif
+
 #if !defined SendClientEventF
     #define SendClientEventF(%1,%2,%3,%4) 		str_2[0] = EOS, format(str_2,sizeof str_2,%4), SendClientEvent(%1,%2,%3,str_2)
 #endif
@@ -44,6 +48,55 @@ enum CefDataType
 	CefHide,
 	CefNumber = 6,
 };
+
+#if defined _ALS_ShowPlayerDialog
+    #undef ShowPlayerDialog
+#else
+    #define _ALS_ShowPlayerDialog
+#endif
+
+#define ShowPlayerDialog( client_ShowPlayerDialog(
+
+stock client_ShowPlayerDialog(playerid, dialogid, style, caption[], info[], button1[], button2[])
+{
+    static buffer[4096 + 1];
+
+    for (new i = sizeof(buffer) - 1; i != -1; i--)
+        buffer[i] = '\0';
+
+    for (new i, j; info[i] != '\0'; i++) {
+        if (info[i] == '\n')
+            strcat(buffer, "<n>"), j += 3;
+        else if (info[i] == '\t')
+            strcat(buffer, "<t>"), j += 3;
+        else if (info[i] == '\"')
+            buffer[j++] = '\'';
+        else
+            buffer[j++] = info[i];
+    }
+
+    SendClientEventF(playerid, Interface, CefUpdate, "window.addDialogInQueue('[%i,%i,\"%s\",\"\",\"%s\",\"%s\",0,0]', \"%s\", 0)", dialogid, style, caption, button1, button2, buffer);
+
+    return 1;
+}
+
+
+#if defined _ALS_GameTextForPlayer
+    #undef GameTextForPlayer
+#else
+    #define _ALS_GameTextForPlayer
+#endif
+
+#define GameTextForPlayer( client_GameTextForPlayer(
+
+stock client_GameTextForPlayer(playerid, const string[], time, style)
+{
+	SendClientEventF(playerid, Interface, CefUpdate, "interface('GameText').add('[%d,\"%s\",%d,0,-1,1]')", style, string, time);
+ 	SendClientEvent(playerid, Interface, CefShow, "GameText");
+
+    return 1;
+}
+
 
 stock SendClientEvent(playerid, CefDataStyle:style, CefDataType:type, string[])
 {
@@ -88,14 +141,6 @@ stock SendClientEventWithArguments(playerid, CefDataStyle:style, CefDataType:typ
     PR_SendPacket(bsn, playerid);
     BS_Delete(bsn);
 }
-
-CMD:test_cef(playerid, params[])
-{
-    extract params -> new string:param[20];
-
-    //SendClientEventWithArgumentsF(playerid, Interface, CefShow, "Auth", "[\"auth\", \"%s\", 1, 1, 0, 0, 1]", param);
-}
-
 forward OnInterfaceEvent(playerid, const event[], bs);
 
 public OnInterfaceEvent(playerid, const event[], bs)
